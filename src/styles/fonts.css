@@ -1,0 +1,20 @@
+@font-face {
+  font-family: "Ribbon 131 Bold";
+  src: url("/fonts/Ribbon 131 Bold.otf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Futura Std Book";
+  src: url("/fonts/Futura Std Book.otf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Futura Std Medium";
+  src: url("/fonts/Futura Std Medium.otf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}

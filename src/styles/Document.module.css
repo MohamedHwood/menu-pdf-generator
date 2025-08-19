@@ -1,22 +1,26 @@
 .viewer {
   background: #e5e5e5;
-  padding: 20px;
+  padding-top: 40px;
+  /* no padding for export */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .page {
-  width: 650px;
-  min-height: 800px;
+  width: 210mm;
+  height: 297mm;
   background: white;
-  margin-bottom: 40px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  margin: 0 auto 40px auto;
   position: relative;
   overflow: hidden;
+  font-family: "Ribbon 131 Bold", sans-serif;
+
+  /* Break after each page, but not the last */
+  page-break-after: always;
+  break-after: page;
 }
 
-/* Inner border for spreadsheet look */
 .page::before {
   content: "";
   position: absolute;
@@ -29,13 +33,25 @@
   z-index: 2;
 }
 
-/* Make image fill entire page */
+.page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+/* Full-bleed image inside page */
 .imageFill {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  right: 40px;
+  bottom: 40px;
   z-index: 1;
+}
+
+.imageFill img {
   width: 100%;
   height: 100%;
-  margin-left: 50px;
-  overflow: hidden;
+  object-fit: cover;
 }
 
 .title,
@@ -43,4 +59,21 @@
   position: relative;
   z-index: 3;
   text-align: center;
+}
+
+@media print {
+  .viewer {
+    background: #fafafa !important;
+    padding-top: 0 !important;
+  }
+
+  .page {
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: #fafafa;
+  }
+
+  .imageFill {
+    background: #fafafa !important;
+  }
 }
