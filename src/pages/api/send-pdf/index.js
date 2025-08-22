@@ -1,6 +1,7 @@
 // pages/api/send-pdf.js
 import puppeteer from "puppeteer";
-// import mailgun from "../../../../config/mailgun";
+import puppeteerCore from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import Mailgun from "mailgun.js";
 import { Readable } from "stream";
 import formData from "form-data";
@@ -16,13 +17,27 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Email is required" });
   }
 
-  try {
-    // --- Generate PDF ---
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+  let browser = null;
 
+  try {
+    // --- Use puppeteer locally, puppeteer-core + chromium on Vercel ---
+    const isLocal = !process.env.VERCEL;
+
+    if (isLocal) {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+    } else {
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
+    }
+
+    // --- Generate PDF ---
     const page = await browser.newPage();
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/print`;
 
@@ -65,7 +80,6 @@ export default async function handler(req, res) {
         return readable;
       }
 
-      // Send email with attachment
       await mg.messages.create(process.env.MAILGUN_DOMAIN, {
         from: "Tipsee@hwoodgroup.com <no-reply@hwoodgroup.com>",
         to: email,
@@ -74,7 +88,7 @@ export default async function handler(req, res) {
         attachment: [
           {
             filename: "Delilah-Miami-Menu.pdf",
-            data: bufferToStream(pdfBuffer), // ✅ Wrap the Buffer
+            data: bufferToStream(pdfBuffer),
           },
         ],
       });
@@ -86,5 +100,7 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error("PDF/email error:", err);
     return res.status(500).json({ error: "Failed to process request" });
+  } finally {
+    if (browser) await browser.close();
   }
 }
